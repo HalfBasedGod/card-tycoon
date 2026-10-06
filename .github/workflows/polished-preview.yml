@@ -1,0 +1,35 @@
+name: Build polished preview
+on:
+  push:
+    paths: ['.github/workflows/polished-preview.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore original and build preview
+        env:
+          PATCH: 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
+        run: |
+          python3 - <<'PY'
+          import os,base64,zlib,subprocess,re
+          source=subprocess.check_output(['git','show','9379ebfb86633e4d80958039f4a476829e3a096b:index.html']).decode()
+          source=source.replace('init();','load();')
+          patch=zlib.decompress(base64.b64decode(os.environ['PATCH'])).decode()
+          result=source.replace('</body>','<script>'+patch+'</script></body>')
+          open('preview.html','w').write(result)
+          open('/tmp/check.js','w').write(';\n'.join(re.findall(r'<script>(.*?)</script>',result,re.S)))
+          subprocess.run(['node','--check','/tmp/check.js'],check=True)
+          PY
+      - name: Commit preview only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add preview.html
+          git diff --cached --quiet || git commit -m 'Build polished v3.1 preview'
+          git push
