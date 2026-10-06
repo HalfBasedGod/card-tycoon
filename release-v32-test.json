@@ -1,0 +1,16 @@
+{
+  "version": "3.2",
+  "browser": "WebKit",
+  "mobileTouch": true,
+  "precision": true,
+  "packReveal": true,
+  "collectorScreens": true,
+  "navigation": true,
+  "saveReload": true,
+  "water": true,
+  "sport": true,
+  "contract": true,
+  "grading": true,
+  "history": true,
+  "errors": []
+}
