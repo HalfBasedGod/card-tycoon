@@ -1,0 +1,37 @@
+name: Publish tested Card Tycoon
+on:
+  push:
+    paths: ['.github/workflows/publish-tested-game.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify tested build and replace main game
+        run: |
+          python3 - <<'PY'
+          import subprocess,json
+          ref='87b36f5f4a5c8716a83ef458583cd2fc0a95873d'
+          report=json.loads(subprocess.check_output(['git','show',ref+':preview-test.json']))
+          assert report['browser']=='WebKit' and report['errors']==[]
+          for k in ['navigation','packOpen','revealAll','cardDetails','lineupToggle']:
+              assert report[k] is True,k
+          current=subprocess.check_output(['git','rev-parse','HEAD:index.html']).decode().strip()
+          assert current=='49c61bb1c67826941a070804260b5c3d1a5b2bd0','Main file changed; refusing to overwrite'
+          source=subprocess.check_output(['git','show',ref+':preview.html'])
+          open('index.html','wb').write(source)
+          assert open('index.html','rb').read()==source
+          open('release-test.json','w').write(json.dumps({'source_commit':ref,'main_file':'index.html',**report},indent=2))
+          PY
+      - name: Commit consolidated main game
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html release-test.json
+          git commit -m 'Publish browser-tested polished Card Tycoon v3.1'
+          git push
