@@ -1,0 +1,10 @@
+{
+  "browser": "WebKit",
+  "viewport": "390x844",
+  "navigation": true,
+  "packOpen": true,
+  "revealAll": true,
+  "cardDetails": true,
+  "lineupToggle": true,
+  "errors": []
+}
