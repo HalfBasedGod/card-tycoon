@@ -1,0 +1,12 @@
+{
+  "source_commit": "87b36f5f4a5c8716a83ef458583cd2fc0a95873d",
+  "main_file": "index.html",
+  "browser": "WebKit",
+  "viewport": "390x844",
+  "navigation": true,
+  "packOpen": true,
+  "revealAll": true,
+  "cardDetails": true,
+  "lineupToggle": true,
+  "errors": []
+}
