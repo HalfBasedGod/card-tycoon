@@ -1,0 +1,85 @@
+name: Repair and browser-test preview
+on:
+  push:
+    paths: ['.github/workflows/repair-preview.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Apply startup and save guards
+        run: |
+          python3 - <<'PY'
+          import re
+          p='preview.html'
+          s=open(p).read()
+          guard="S.lineup=Array.isArray(S.lineup)?S.lineup:Object.values(S.lineup||{}).flat();S.stock=S.stock||{};S.grades=S.grades||{};S.ach=S.ach||{};S.base=Number.isFinite(S.base)?S.base:S.life;"
+          s=s.replace('cps=()=>S.lineup.reduce',guard+'cps=()=>S.lineup.reduce')
+          s=s.replace("localStorage.setItem('backup_before_v31',JSON.stringify(S));","try{localStorage.setItem('backup_before_v31',JSON.stringify(S))}catch(e){}")
+          s=s.replace("const raw=localStorage.getItem('ct3');","let raw=null;try{raw=localStorage.getItem('ct3');if(raw)JSON.parse(raw)}catch(e){raw=null}")
+          s=s.replace('S.coins=o.coins;S.life=o.life;S.lp=o.lp','S.coins=Number.isFinite(o.coins)?o.coins:S.coins;S.life=Number.isFinite(o.life)?o.life:S.life;S.lp=Number.isFinite(o.lp)?o.lp:S.lp')
+          s=s.replace('setInterval(tick,1000);setInterval(save,5000);renderAll();save();','setInterval(tick,1000);setInterval(save,5000);')
+          fix="(()=>{\nconst good=k=>{try{const[c,id,r]=k.split(':');return Number.isInteger(+id)&&+id>=0&&(c==='t'?!!MONSTERS[+id]&&!!RART[r]:c==='s'&&!!PLAYERS[+id]&&!!PARS[r])}catch(e){return false}};\nS.stock=S.stock&&typeof S.stock==='object'?S.stock:{};S.grades=S.grades&&typeof S.grades==='object'?S.grades:{};S.ach=S.ach&&typeof S.ach==='object'?S.ach:{};S.lineup=Array.isArray(S.lineup)?S.lineup:Object.values(S.lineup||{}).flat();S.lineup=[...new Set(S.lineup.filter(good))];S.lineup=['t','s'].flatMap(c=>S.lineup.filter(k=>k[0]===c).slice(0,5));S.base=Number.isFinite(S.base)?S.base:S.life;S.job=S.job&&good(S.job.k)?S.job:null;\nconst choose=CT31.select;CT31.select=function(k){if(!good(k))return;choose.call(this,k)};\nconst cash=CT31.price;CT31.price=function(k){return cash.call(this,k)};\nconst oldRip=rip;rip=function(p,silent){if(S[p.cur]<p.cost){toast('Need '+p.cost+' '+p.cur+' to open this pack');return null}return oldRip(p,silent)};\nconst oldGrade=CT31.grade;CT31.grade=function(k){oldGrade.call(this,k);renderHUD()};\nconst oldSell=CT31.sell;CT31.sell=function(k){oldSell.call(this,k);renderHUD()};\nconst oldReset=clearSave;clearSave=function(){if(!confirm('Start fresh? A backup of the current save will be kept.'))return;try{localStorage.setItem('cardtycoon_backup_before_reset',JSON.stringify(S))}catch(e){}S=JSON.parse(JSON.stringify(DEF));Object.assign(S,{v31:1,lineup:[],stock:{},grades:{},base:0,ach:{},sales:0,recycled:0,gems:0,job:null});save();renderAll()};\nconst nav=document.querySelectorAll('#nav button');nav.forEach(b=>{b.onclick=null;b.addEventListener('click',()=>{document.querySelectorAll('#nav button').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.getElementById(b.dataset.t).classList.add('on');renderAll()})});\ndocument.body.style.touchAction='manipulation';renderAll();save();\n})();"
+          s=s.replace('</body>','<script>'+fix+'</script></body>')
+          open(p,'w').write(s)
+          PY
+      - name: Install WebKit browser test
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps webkit
+      - name: Test mobile navigation and pack controls
+        run: |
+          python3 -m http.server 8765 > /tmp/server.log 2>&1 &
+          cat > /tmp/test.cjs <<'JS'
+          const {webkit}=require(process.cwd()+'/node_modules/playwright');
+          const fs=require('fs');
+          (async()=>{
+          const browser=await webkit.launch();
+          const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+          const errors=[];page.on('pageerror',e=>errors.push(e.message));
+          await page.goto('http://localhost:8765/preview.html');
+          await page.waitForSelector('#standTap');
+          await page.locator('#nav button[data-t="t-packs"]').tap();
+          await page.waitForSelector('#t-packs.on .prod');
+          await page.locator('#t-packs .prod .btn').first().tap();
+          await page.waitForSelector('#mPack.on');
+          await page.getByRole('button',{name:'Reveal All',exact:true}).tap();
+          await page.getByRole('button',{name:'Collection',exact:true}).tap();
+          for(const t of ['t-binder','t-shop','t-more','t-home']){
+            await page.locator('#nav button[data-t="'+t+'"]').tap();
+            if(!(await page.locator('#'+t+'.on').count()))throw Error('Tab failed: '+t);
+          }
+          await page.locator('#t-home .grid [onclick]').first().tap();
+          await page.waitForSelector('#mCard.on');
+          await page.getByRole('button',{name:'Display / remove',exact:true}).tap();
+          await page.getByRole('button',{name:'Close',exact:true}).tap();
+          await page.screenshot({path:'preview-mobile.png',fullPage:true});
+          if(errors.length)throw Error(errors.join('; '));
+          fs.writeFileSync('preview-test.json',JSON.stringify({browser:'WebKit',viewport:'390x844',navigation:true,packOpen:true,revealAll:true,cardDetails:true,lineupToggle:true,errors},null,2));
+          await browser.close();
+          })().catch(e=>{fs.writeFileSync('preview-test.json',JSON.stringify({passed:false,error:e.message},null,2));console.error(e);process.exit(1)});
+          JS
+          node /tmp/test.cjs
+      - name: Publish only after browser tests pass
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add preview.html preview-mobile.png preview-test.json
+          git commit -m 'Repair preview controls; pass mobile WebKit interaction tests'
+          git push
+      - name: Save failure diagnostics without publishing broken game
+        if: failure()
+        run: |
+          if [ -f preview-test.json ]; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add preview-test.json
+            git diff --cached --quiet || git commit -m 'Record preview interaction test failure'
+            git push
+          fi
