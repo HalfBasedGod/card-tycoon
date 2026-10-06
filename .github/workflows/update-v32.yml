@@ -1,0 +1,68 @@
+name: Build tested Card Tycoon 3.2
+on:
+  push:
+    paths: ['.github/workflows/update-v32.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Integrate features into existing interface
+        env:
+          UPDATE: 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
+        run: |
+          python3 - <<'PY'
+          import subprocess,base64,zlib,os
+          assert subprocess.check_output(['git','rev-parse','HEAD:index.html']).decode().strip()=='65a59d9d72a6d65600c0f2db4df0b74657e17d62','Unexpected base version'
+          s=open('index.html').read()
+          changes={
+            'const isTcg=TCGPACKS.includes(pack);':"const isTcg=pack.kind==='t'||TCGPACKS.includes(pack);",
+            'const mi=Math.random()*MONSTERS.length|0;':"const choices=pack.pool||MONSTERS;const mi=choices[Math.random()*choices.length|0].id;",
+            'function pickPlayer(par){':'function pickPlayer(par,sport){',
+            'PLAYERS.filter(p=>tiers.includes(p.t))':'PLAYERS.filter(p=>tiers.includes(p.t)&&(sport===undefined||p.s===sport))',
+            'const p=pickPlayer(par);':'const p=pickPlayer(par,pack.sport);',
+            'const g=pickW([[1,1]':'const g=S.job.grade??pickW([[1,1]'
+          }
+          for a,b in changes.items():
+              assert a in s,a
+              s=s.replace(a,b)
+          update=zlib.decompress(base64.b64decode(os.environ['UPDATE'])).decode()
+          s=s.replace('</body>','<script>'+update+'</script></body>')
+          open('index.html','w').write(s)
+          PY
+      - name: Install mobile WebKit
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps webkit
+      - name: Test each feature and navigation
+        run: |
+          python3 -m http.server 8765 > /tmp/server32.log 2>&1 &
+          cat > /tmp/test32.cjs <<'JS'
+          const {webkit}=require(process.cwd()+'/node_modules/playwright'),fs=require('fs');
+          (async()=>{const browser=await webkit.launch(),page=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('http://localhost:8765/index.html');await page.waitForSelector('#standTap');if(await page.evaluate(()=>fmt(.025))!=='0.025')throw Error('precision');await page.locator('[data-t="t-packs"]').tap();await page.locator('#t-packs .prod button').first().tap();await page.getByRole('button',{name:'Reveal All',exact:true}).tap();await page.getByRole('button',{name:'Collection',exact:true}).tap();
+          const result=await page.evaluate(()=>{S.coins=2000;CT32.open(CT32.themes.findIndex(p=>p.n==='Water Frontier'));const water=CT32.data().history[0].cards.every(k=>MONSTERS[+k.split(':')[1]].e==='Water');revealAll();closePack();CT32.open(CT32.themes.findIndex(p=>p.n==='Baseball Spotlight'));const sport=CT32.data().history[0].cards.every(k=>PLAYERS[+k.split(':')[1]].s===0);revealAll();closePack();for(const k in S.stock)S.stock[k]=0;const ks=MONSTERS.filter(m=>m.e==='Water').slice(0,3).map(m=>'t:'+m.id+':C');for(const k of ks){S.cards[k]=2;S.stock[k]=1}CT32.data().contracts={epoch:-1,done:[]};const coins=S.coins;CT32.fulfill(0);const contract=S.coins>coins&&ks.every(k=>S.cards[k]===1)&&CT32.contracts()[0].done;const k='t:0:C';S.coins=2000;S.cards[k]=2;S.stock[k]=1;S.job=null;CT32.data().quality[k]=[['Centering','Corners','Edges','Surface'].map(n=>({n,v:95}))];CT31.grade(k);const grading=S.job&&S.job.subgrades.every(x=>x.v===95)&&S.cards[k]===1;S.job.grade=10;S.job.end=Date.now()-1;return {water,sport,contract,grading,history:CT32.data().history.length===3}});if(Object.values(result).some(v=>!v))throw Error(JSON.stringify(result));await page.waitForFunction(()=>S.grades['t:0:C']===10);await page.getByRole('button',{name:'Close',exact:true}).tap();await page.locator('[data-t="t-extra32"]').tap();for(const name of ['Contracts','Grading','Trophies','History'])await page.getByRole('button',{name,exact:true}).tap();for(const t of ['t-binder','t-shop','t-more','t-home'])await page.locator('[data-t="'+t+'"]').tap();await page.screenshot({path:'game-v32-mobile.png',fullPage:true});await page.reload();await page.waitForSelector('#standTap');if(errors.length)throw Error(errors.join(';'));fs.writeFileSync('release-v32-test.json',JSON.stringify({version:'3.2',browser:'WebKit',mobileTouch:true,precision:true,packReveal:true,collectorScreens:true,navigation:true,saveReload:true,...result,errors},null,2));await browser.close()})().catch(e=>{fs.writeFileSync('release-v32-test.json',JSON.stringify({passed:false,error:e.message},null,2));console.error(e);process.exit(1)});
+          JS
+          node /tmp/test32.cjs
+      - name: Publish only passing build
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html game-v32-mobile.png release-v32-test.json
+          git commit -m 'Publish tested Card Tycoon 3.2: precision, contracts, themes, condition, trophies and history'
+          git push
+      - name: Record failures without replacing game
+        if: failure()
+        run: |
+          if [ -f release-v32-test.json ]; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add release-v32-test.json
+            git diff --cached --quiet || git commit -m 'Record v3.2 browser test failure'
+            git push
+          fi
